@@ -13,6 +13,10 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\UpdateUserPhotoRequest;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+
+
 
 class UserController extends Controller
 {
@@ -26,8 +30,18 @@ class UserController extends Controller
         abort_if(Gate::denies('users_access'), Response::HTTP_FORBIDDEN, 'Forbidden');
 
         $users = User::with('role')->paginate(5)->appends($request->query());
-        return view('admin.users.index',compact('users'));
+        $query = "SELECT 
+                    roles.title, users.id, users.role_id, COUNT(users.name) as total 
+                    FROM users 
+                    JOIN roles on users.role_id = roles.id 
+                    GROUP BY roles.title";
 
+        $m_user =DB::select($query);
+        // echo "<pre>";
+        // print_r($m_user);
+        // print_r($query);
+        // exit;
+        return view('admin.users.index',compact('m_user','users'));
     }
 
     /**
@@ -49,10 +63,30 @@ class UserController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(StoreUserRequest $request)
+    public function store(Request $request)
     {
-        User::create($request->validated());
-        return redirect()->route('admin.users.index')->with(['status-success' => "New User Created"]);
+        // User::create($request->validated());
+
+            $request->validate([
+                'role_id' => 'required',
+                'name' => 'required',
+                'email' => 'required',
+                'password' => 'required',
+                'password_confirmation' => 'required',
+                'image' => 'image|mimes:jpeg,png,jpg,gif,svg',
+            ]);
+    
+            $input = $request->all();
+    
+            if ($image = $request->file('image')) {
+                $destinationPath = 'images/';
+                $profileImage = date('YmdHis') . "." . $image->getClientOriginalExtension();
+                $image->move($destinationPath, $profileImage);
+                $input['image'] = "$profileImage";
+            }
+        
+            User::create($input);
+            return redirect()->route('admin.users.index')->with(['status-success' => "New User Created"]);
     }
 
 
@@ -64,9 +98,19 @@ class UserController extends Controller
      */
     public function show(User $user)
     {
-        abort_if(Gate::denies('user_show'), Response::HTTP_FORBIDDEN, 'Forbidden');
+        // abort_if(Gate::denies('user_show'), Response::HTTP_FORBIDDEN, 'Forbidden');
 
-        return view('admin.users.show',compact('user'));
+        $query = "SELECT users.*, roles.title 
+                    FROM users 
+                    JOIN roles on users.role_id = roles.id 
+                    WHERE users.role_id = $user->role_id";
+
+        $m_user = DB::select($query);
+        // echo "<pre>";
+        // print_r($m_user);
+        // print_r($query);
+        // exit;
+        return view('admin.users.show',compact('m_user'));
     }
 
     /**
@@ -91,9 +135,31 @@ class UserController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(UpdateUserRequest $request, User $user)
+    public function update(Request $request, User $user)
     {
-        $user->update(array_filter($request->validated()));
+        // $user->update(array_filter($request->validated()));
+        $request->validate([
+            'role_id' => 'required',
+            'name' => 'required',
+            'email' => 'required',
+            'password' => 'required',
+            'image' => 'image|mimes:jpeg,png,jpg,gif,svg',
+        ]);
+  
+        $input = $request->all();
+  
+        if ($image = $request->file('image')) {
+            $destinationPath = 'images/';
+            $profileImage = date('YmdHis') . "." . $image->getClientOriginalExtension();
+            $image->move($destinationPath, $profileImage);
+            $input['image'] = "$profileImage";
+        }else{
+            unset($input['image']);
+        }
+          
+        $user->update($input);
+        // print_r($user->update($input));
+        // exit;
         return redirect()->route('admin.users.index')->with(['status-success' => "User Updated"]);
     }
 

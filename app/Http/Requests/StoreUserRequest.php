@@ -24,11 +24,13 @@ class StoreUserRequest extends FormRequest
      */
     public function rules()
     {
+
         return [
             'name' => 'required|string|min:2|max:200',
             'email' => 'required|email|max:200|unique:users',
             'password' => 'required|confirmed|min:6|max:20',
             'role_id' => 'required|exists:roles,id',
+            'image' => 'image|mimes:jpeg,png,jpg,gif,svg',
         ];
     }
 }

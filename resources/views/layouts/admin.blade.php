@@ -60,7 +60,7 @@
                             <!--You can put here icon as well // <i class="wi wi-sunset"></i> //-->
                             <!-- Dark Logo icon -->
 
-                                <!-- <img src="{{ asset('logos/logo-dark.png') }}" class="dark-logo" width="158px" alt="Laravel Roles & Permissions Manager"> -->
+                                <img src="https://gisaset.slemankab.go.id/img/logo.png" height="100px" width="100px" class="dark-logo" alt="Laravel Roles & Permissions Manager">
 
 
                         </b>
@@ -107,7 +107,7 @@
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle waves-effect waves-dark" href="" data-toggle="dropdown"
                                 aria-haspopup="true" aria-expanded="false">
-                                    {{-- <img src="{{ asset('admin_assets/images/users/1.jpg') }}" alt="user" class="profile-pic mr-2"> --}}
+                                    <img src="{{ asset('admin_assets/images/users/no_user_photo.png') }}" alt="user" class="profile-pic mr-2">
                                     {{ Auth()->user()->name }}
                             </a>
                             <div class="dropdown-menu dropdown-menu-right">
